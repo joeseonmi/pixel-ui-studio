@@ -79,6 +79,16 @@ button{cursor:pointer}
 .dinfo{font-variant-numeric:tabular-nums;color:var(--mute);font-size:12px}
 @media (max-width:860px){.dgrid{grid-template-columns:1fr}.dtools{flex-direction:row;flex-wrap:wrap}.dstage{max-height:52vh}}
 @media (max-width:1600px){.logo small{display:none}.top{gap:6px 10px}.top .btn{padding:5px 9px}}
+.menuwrap{position:relative}
+.mbtn{font-weight:600}
+.menu{position:absolute;left:0;top:calc(100% + 4px);z-index:30;min-width:250px;background:var(--panel2);border:1px solid var(--line2);border-radius:6px;padding:5px;box-shadow:0 10px 30px #000a;display:flex;flex-direction:column}
+.menu[hidden]{display:none!important}
+.menu button{background:none;border:0;text-align:left;padding:7px 10px;border-radius:4px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--fg)}
+.menu button:hover,.menu button:focus-visible{background:var(--acc);color:var(--acc-ink);outline:none}
+.menu button:hover kbd,.menu button:focus-visible kbd{color:var(--acc-ink)}
+.menu kbd{margin-left:auto;font:11px var(--f-body);color:var(--mute)}
+.menu .mhd{font:10px var(--f-disp);letter-spacing:.06em;color:var(--mute);padding:6px 10px 3px}
+.menu .msep{height:1px;background:var(--line2);margin:4px 2px}
 .rtabs{display:flex;position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--line)}
 .rtab{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:10px 8px 8px;font:600 13px var(--f-body);color:var(--mute);display:flex;align-items:center;justify-content:center;gap:6px}
 .rtab:hover{color:var(--fg)}.rtab.on{color:var(--fg);border-bottom-color:var(--acc)}
@@ -192,6 +202,23 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
 <div id="app">
   <header class="top">
     <div class="logo"><i></i>PIXEL UI 공방 <small>고도용 픽셀 UI 편집기</small></div>
+    <div class="menuwrap"><button class="btn mbtn" id="mFile" aria-haspopup="true" aria-expanded="false">파일 ▾</button>
+      <div class="menu" id="fileMenu" role="menu" hidden>
+        <div class="mhd">프로젝트</div>
+        <button role="menuitem" id="mNewProj">새 프로젝트</button>
+        <button role="menuitem" id="mOpenProj">프로젝트 열기…<kbd>⌘O</kbd></button>
+        <button role="menuitem" id="mSaveNow">지금 저장<kbd>⌘S</kbd></button>
+        <div class="msep"></div>
+        <div class="mhd">파일</div>
+        <button role="menuitem" id="bSave">파일로 저장 (.json)<kbd>⇧⌘S</kbd></button>
+        <button role="menuitem" id="mImport">파일에서 가져오기…</button>
+        <div class="msep"></div>
+        <div class="mhd">내보내기</div>
+        <button role="menuitem" id="bExport">고도로 내보내기 (.zip)<kbd>⌘E</kbd></button>
+        <button role="menuitem" id="mPngOne">PNG — 지금 아트보드<kbd>⇧⌘E</kbd></button>
+        <button role="menuitem" id="bPng">PNG — 모든 아트보드 (.zip)</button>
+        <button role="menuitem" id="bKit">컴포넌트 키트 (.zip)</button>
+      </div></div>
     <div class="field-row"><span class="lbl">장면</span><input id="sceneName" class="inp" style="width:140px" value="InventoryUI" aria-label="장면 이름"></div>
     <div class="field-row"><span class="lbl">해상도</span>
       <select id="res" class="inp" aria-label="기준 해상도">
@@ -199,12 +226,7 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
         <option value="640x360">640×360</option><option value="256x224">256×224</option><option value="180x320">180×320 (세로)</option><option value="270x480">270×480 (세로)</option>
       </select></div>
     <div class="grow"></div>
-    <button class="btn" id="bNew" title="새 아트보드를 옆에 추가해요">＋ 아트보드</button>
     <button class="btn proj" id="bProj" title="프로젝트 목록 열기"><span class="pdot" id="saveDot"></span><span id="projName">내 프로젝트</span> <span class="pst" id="saveSt"></span></button>
-    <button class="btn" id="bSave" title="프로젝트를 .json 파일로 내려받아요">파일로 저장</button>
-    <button class="btn" id="bPng" title="아트보드를 PNG 이미지로 저장해요 (여러 개면 zip)">PNG 저장</button>
-    <button class="btn" id="bKit">컴포넌트 키트</button>
-    <button class="btn primary" id="bExport">고도로 내보내기</button>
     <input type="file" id="fOpen" accept=".json,application/json" hidden>
   </header>
 
@@ -213,6 +235,7 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
     <div class="tools">
       <button class="btn icon" id="zOut" aria-label="축소">−</button><span class="zoomv" id="zv">3x</span><button class="btn icon" id="zIn" aria-label="확대">+</button>
       <button class="btn sm" id="zFit" title="지금 아트보드를 화면에 맞춰요">화면 맞춤</button><button class="btn sm" id="zTool" title="돋보기: 클릭하면 확대, Alt+클릭은 축소, 끌면 그 영역으로 확대 (Z, 누르고 있으면 잠깐만)">Z 돋보기</button><button class="btn sm" id="zAll" title="모든 아트보드가 보이게 (0)">전체 보기</button>
+      <span class="sep"></span><button class="btn sm" id="bNew" title="새 아트보드를 옆에 추가해요">＋ 아트보드</button>
       <span class="sep"></span>
       <label class="chk"><input type="checkbox" id="cGrid"> 격자</label>
       <label class="chk"><input type="checkbox" id="cSnap"> 4px 맞춤</label>
@@ -1029,7 +1052,23 @@ document.getElementById('tbDup').onclick=()=>dupMany(selected());document.getEle
 document.getElementById('tbDel').onclick=()=>delMany(selected());document.getElementById('tbGroup').onclick=()=>{wholeGroup()?ungroupSel():groupSel()};document.getElementById('tbLock').onclick=lockSel;
 document.getElementById('tbText').onclick=()=>{const o=single();if(o&&COMPS[o.comp].tx)openInline(o)};
 if(COARSE)setTimeout(showTbar,0);
-document.getElementById('bPng').onclick=()=>exportPNG(S.boards.length>1?S.boards:[B()]);
+document.getElementById('bPng').onclick=()=>exportPNG(S.boards);document.getElementById('mPngOne').onclick=()=>exportPNG([B()]);
+const fileMenu=document.getElementById('fileMenu'),mFile=document.getElementById('mFile');
+function setMenu(open){fileMenu.hidden=!open;mFile.setAttribute('aria-expanded',open?'true':'false');mFile.classList.toggle('on',open);if(open){const f=fileMenu.querySelector('button');f&&f.focus()}}
+mFile.onclick=e=>{e.stopPropagation();setMenu(fileMenu.hidden)};
+fileMenu.addEventListener('click',e=>{if(e.target.closest('button'))setMenu(false)});
+document.addEventListener('pointerdown',e=>{if(!fileMenu.hidden&&!e.target.closest('.menuwrap'))setMenu(false)});
+fileMenu.addEventListener('keydown',e=>{const items=[...fileMenu.querySelectorAll('button')],i=items.indexOf(document.activeElement);
+ if(e.key==='Escape'){e.preventDefault();setMenu(false);mFile.focus()}else if(e.key==='ArrowDown'){e.preventDefault();items[(i+1)%items.length].focus()}else if(e.key==='ArrowUp'){e.preventDefault();items[(i-1+items.length)%items.length].focus()}});
+document.getElementById('mNewProj').onclick=()=>newProject();
+document.getElementById('mOpenProj').onclick=()=>document.getElementById('bProj').click();
+document.getElementById('mSaveNow').onclick=()=>saveNow();
+document.getElementById('mImport').onclick=()=>document.getElementById('fOpen').click();
+async function saveNow(){if(!CLOUD.ready){toast('이 화면에서는 저장소를 쓸 수 없어요. 파일로 저장을 써 주세요');return}CLOUD.last='';await cloudSave();if(typeof GH!=='undefined'&&GH.ok)await ghSync();if(CLOUD.status==='saved')toast(typeof GH!=='undefined'&&GH.ok&&!GH.err?'저장하고 GitHub에 올렸어요':'저장했어요')}
+document.addEventListener('keydown',e=>{const mod=e.ctrlKey||e.metaKey;if(!mod)return;const k=e.key.toLowerCase();if(!document.getElementById('dmodal').hidden||!document.getElementById('modal').hidden)return;
+ if(k==='s'){e.preventDefault();if(e.shiftKey)document.getElementById('bSave').click();else saveNow()}
+ else if(k==='o'){e.preventDefault();document.getElementById('bProj').click()}
+ else if(k==='e'){e.preventDefault();if(e.shiftKey)exportPNG([B()]);else document.getElementById('bExport').click()}},true);
 function updTbar(){const tb=document.getElementById('tbar');if(!tb||tb.hidden)return;const L=selected(),one=single();const n=L.length;
  const set=(id,dis,txt)=>{const b=document.getElementById(id);b.disabled=!!dis;if(txt)b.textContent=txt};
  document.getElementById('tbMulti').classList.toggle('on',touchMulti);
