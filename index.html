@@ -277,7 +277,7 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
         </div>
       </div>
     </div>
-    <div class="status"><span>해상도 <b id="sRes">320×180</b></span><span>선택 <b id="sSel">없음</b></span><span>커서 <b id="sCur">–</b></span><span class="grow"></span><span title="Alt+드래그는 요소 위에서도 선택 사각형 · Shift+클릭 추가 · Ctrl+A 전체 · 방향키 1px, Shift 4px · Ctrl+D 복제">드래그 다중 선택(걸치기만 해도) · Z 돋보기 · T 글자 · Ctrl+G 그룹 · Ctrl+C/V 복사·붙여넣기 · R 회전 · 더블클릭 글자 고치기 · Del 삭제</span></span></div>
+    <div class="status"><span>해상도 <b id="sRes">320×180</b></span><span>선택 <b id="sSel">없음</b></span><span>커서 <b id="sCur">–</b></span><span class="grow"></span><span title="Alt+드래그는 요소 위에서도 선택 사각형 · Shift+클릭 추가 · Ctrl+A 전체 · 방향키 1px, Shift 4px · Ctrl+D 복제">드래그 다중 선택(걸치기만 해도) · Shift+크기조절 비율 유지 · Z 돋보기 · T 글자 · Ctrl+G 그룹 · Ctrl+C/V 복사·붙여넣기 · R 회전 · 더블클릭 글자 고치기 · Del 삭제</span></span></div>
   </main>
 
   <aside class="right">
@@ -1203,6 +1203,10 @@ view.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&tps.has(e.po
  else{const el=drag.el,o=drag.o;const [mw,mh]=minSize(el);const k=drag.k;let x=o.x,y=o.y,w=o.w,hh=o.h;
   if(k.includes('e'))w=Math.max(mw,sn(o.x+o.w+dx)-o.x);if(k.includes('s'))hh=Math.max(mh,sn(o.y+o.h+dy)-o.y);
   if(k.includes('w')){const nx=Math.min(sn(o.x+dx),o.x+o.w-mw);w=o.x+o.w-nx;x=nx}if(k.includes('n')){const ny=Math.min(sn(o.y+dy),o.y+o.h-mh);hh=o.y+o.h-ny;y=ny}
+  {const Cr=COMPS[el.comp];const both=!(Cr.fixW||Cr.fixH||Cr.kind==='slider');if(e.shiftKey&&both&&o.w>0&&o.h>0){const ar=o.w/o.h,sx=w/o.w,sy=hh/o.h,hz=/[ew]/.test(k),vt=/[ns]/.test(k);
+   let f=hz&&vt?(Math.abs(sx-1)>Math.abs(sy-1)?sx:sy):hz?sx:sy;f=Math.max(f,mw/o.w,mh/o.h);w=Math.max(mw,Math.round(o.w*f));hh=Math.max(mh,Math.round(w/ar));
+   if(hz&&vt){x=k.includes('w')?o.x+o.w-w:o.x;y=k.includes('n')?o.y+o.h-hh:o.y}else if(hz){x=k.includes('w')?o.x+o.w-w:o.x;y=Math.round(o.y+(o.h-hh)/2)}else{y=k.includes('n')?o.y+o.h-hh:o.y;x=Math.round(o.x+(o.w-w)/2)}
+   document.getElementById('sSel').textContent=`${el.name} · 비율 유지 · ${w}×${hh}`}}
   if(COMPS[el.comp].kind==='image'&&(el.mode||'fixed')==='fixed'&&S.images[el.img]){const im=S.images[el.img];
    if(e.altKey){el.mode='stretch';el.x=x;el.y=y;el.w=w;el.h=hh;if(!drag.altTold){drag.altTold=1;toast('자유 크기(그냥 늘리기)로 바꿨어요')}}
    else{const sw=/[ew]/.test(k),sh=/[ns]/.test(k);const kk=nearSc(sw&&sh?Math.max(w/im.w,hh/im.h):sw?w/im.w:hh/im.h);el.scale2=kk;const nw=Math.max(1,Math.round(im.w*kk)),nh=Math.max(1,Math.round(im.h*kk));
