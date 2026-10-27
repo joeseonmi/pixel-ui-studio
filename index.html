@@ -80,6 +80,7 @@ button{cursor:pointer}
 @media (max-width:860px){.dgrid{grid-template-columns:1fr}.dtools{flex-direction:row;flex-wrap:wrap}.dstage{max-height:52vh}}
 @media (max-width:1600px){.logo small{display:none}.top{gap:6px 10px}.top .btn{padding:5px 9px}}
 .menuwrap{position:relative}
+.top .seg .btn{display:flex;align-items:center;gap:5px;padding:5px 9px}
 .mbtn{font-weight:600}
 .menu{position:absolute;left:0;top:calc(100% + 4px);z-index:30;min-width:250px;background:var(--panel2);border:1px solid var(--line2);border-radius:6px;padding:5px;box-shadow:0 10px 30px #000a;display:flex;flex-direction:column}
 .menu[hidden]{display:none!important}
@@ -223,8 +224,9 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
     <div class="field-row"><span class="lbl">해상도</span>
       <select id="res" class="inp" aria-label="기준 해상도">
         <option value="320x180">320×180</option><option value="384x216">384×216</option><option value="480x270">480×270</option>
-        <option value="640x360">640×360</option><option value="256x224">256×224</option><option value="180x320">180×320 (세로)</option><option value="270x480">270×480 (세로)</option>
-      </select></div>
+        <option value="640x360">640×360</option><option value="256x224">256×224</option><option value="256x256">256×256</option>
+      </select>
+      <div class="seg" role="group" aria-label="화면 방향"><button class="btn sm" id="oLand" title="가로 화면" aria-pressed="true"><svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true"><rect x="1" y="2" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>가로</button><button class="btn sm" id="oPort" title="세로 화면" aria-pressed="false"><svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="2" y="1" width="8" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>세로</button></div></div>
     <div class="grow"></div>
     <button class="btn proj" id="bProj" title="프로젝트 목록 열기"><span class="pdot" id="saveDot"></span><span id="projName">내 프로젝트</span> <span class="pst" id="saveSt"></span></button>
     <input type="file" id="fOpen" accept=".json,application/json" hidden>
@@ -1282,8 +1284,10 @@ bgMode.onchange=()=>{S.bg=bgMode.value;bgCol.hidden=S.bg!=='custom';draw();autos
 bgCol.oninput=()=>{S.bgCol=bgCol.value;draw();autosave()};
 document.getElementById('bUndo').onclick=undo;document.getElementById('bRedo').onclick=redo;
 const resSel=document.getElementById('res');
-function syncRes(){const v=S.W+'x'+S.H;if(![...resSel.options].some(o=>o.value===v))resSel.append(h('option',{value:v},S.W+'×'+S.H));resSel.value=v;document.getElementById('sceneName').value=S.name;bgMode.value=S.bg;bgCol.value=S.bgCol;bgCol.hidden=S.bg!=='custom'}
-resSel.onchange=()=>{const [w,hh]=resSel.value.split('x').map(Number);histOnce();S.W=w;S.H=hh;draw();renderBoards();autosave()};
+function syncRes(){const a=Math.max(S.W,S.H),b=Math.min(S.W,S.H),v=a+'x'+b;if(![...resSel.options].some(o=>o.value===v))resSel.append(h('option',{value:v},a+'×'+b));resSel.value=v;const port=S.H>S.W,sq=S.W===S.H;const L=document.getElementById('oLand'),P=document.getElementById('oPort');L.classList.toggle('on',!port);P.classList.toggle('on',port);L.setAttribute('aria-pressed',!port);P.setAttribute('aria-pressed',port);L.disabled=P.disabled=sq;document.getElementById('sceneName').value=S.name;bgMode.value=S.bg;bgCol.value=S.bgCol;bgCol.hidden=S.bg!=='custom'}
+resSel.onchange=()=>{const [a,b]=resSel.value.split('x').map(Number);const port=S.H>S.W;histOnce();S.W=port?b:a;S.H=port?a:b;syncRes();draw();renderBoards();renderProps();autosave()};
+function setOrient(port){if((S.H>S.W)===port||S.W===S.H)return;histOnce();const w=S.W;S.W=S.H;S.H=w;syncRes();draw();renderBoards();renderProps();autosave();toast(`${port?'세로':'가로'}로 바꿨어요 (${S.W}×${S.H}). 요소 위치는 그대로라 필요하면 옮겨 주세요`)}
+document.getElementById('oLand').onclick=()=>setOrient(false);document.getElementById('oPort').onclick=()=>setOrient(true);
 document.getElementById('sceneName').oninput=e=>{histOnce();S.name=e.target.value.replace(/[^\w가-힣-]/g,'')||'Scene';draw();renderBoards();autosave()};
 document.getElementById('bNew').onclick=()=>addBoard(false);
 
