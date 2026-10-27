@@ -750,7 +750,7 @@ const scLabel=q=>q<1?`1/${Math.round(1/q)}배`:`${q}배`;
 function natSize(el){if(COMPS[el.comp].kind==='image'){const im=S.images[el.img];if(!im)return [null,null];if((el.mode||'fixed')==='fixed'){const k=el.scale2||1;return [Math.max(1,Math.round(im.w*k)),Math.max(1,Math.round(im.h*k))]}return [null,null]}const C=COMPS[el.comp],t=themeOf(el),T=texFor(t,el.comp,el.opts);
  if(C.kind==='fixed'||C.kind==='toggle')return [T.cv.width,T.cv.height];
  if(C.kind==='slider')return [null,9];if(C.fixH)return [null,T.cv.height];if(C.fixW)return [T.cv.width,null];return [null,null]}
-function minSize(el){if(COMPS[el.comp].kind!=='image'){const k=scOf(el);if(FREE_SZ[el.comp]&&isFree(el)){const [a,b]=FREE_SZ[el.comp];return [a*k,b*k]}const [a,b]=minSizeRaw(el);return [a*k,b*k]}return minSizeRaw(el)}
+function minSize(el){if(COMPS[el.comp].kind!=='image'){const k=scOf(el);if(FREE_SZ[el.comp]&&isFree(el)){const [a,b]=FREE_SZ[el.comp];return [a*k,b*k]}const [a,b]=minSizeRaw(el);const fk=COMPS[el.comp].kind;if(fk==='fixed'||fk==='toggle')return [a,b];return [a*k,b*k]}return minSizeRaw(el)}
 function minSizeRaw(el){if(COMPS[el.comp].kind==='image'){if(el.mode==='nine'){const m=imgNine(el);return [m[0]+m[2]+1,m[1]+m[3]+1]}const im=S.images[el.img];if((el.mode||'fixed')==='fixed'&&im)return [1,1];return [1,1]}const C=COMPS[el.comp],T=texFor(themeOf(el),el.comp,el.opts);if(C.kind==='label')return [4,4];if(C.kind==='slider')return [14,9];if(!T.m)return [T.cv.width,T.cv.height];return [T.m[0]+T.m[2]+1,T.m[1]+T.m[3]+1]}
 const FREE_SZ={icon_button:[9,9],badge:[7,7]};
 const isFree=el=>!!FREE_SZ[el.comp]&&el.free!==false;
