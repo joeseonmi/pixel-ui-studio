@@ -279,7 +279,7 @@ input[type=color]{width:30px;height:28px;padding:0 2px;border:1px solid var(--li
         </div>
       </div>
     </div>
-    <div class="status"><span>해상도 <b id="sRes">320×180</b></span><span>선택 <b id="sSel">없음</b></span><span>커서 <b id="sCur">–</b></span><span class="grow"></span><span title="Alt+드래그는 요소 위에서도 선택 사각형 · Shift+클릭 추가 · Ctrl+A 전체 · 방향키 1px, Shift 4px · Ctrl+D 복제">드래그 다중 선택(걸치기만 해도) · Shift+크기조절 비율 유지 · Z 돋보기 · T 글자 · Ctrl+G 그룹 · Ctrl+C/V 복사·붙여넣기 · R 회전 · 더블클릭 글자 고치기 · Del 삭제</span></span></div>
+    <div class="status"><span>해상도 <b id="sRes">320×180</b></span><span>선택 <b id="sSel">없음</b></span><span>커서 <b id="sCur">–</b></span><span class="grow"></span><span title="Alt+드래그는 요소 위에서도 선택 사각형 · Shift+클릭 추가 · Ctrl+A 전체 · 방향키 1px, Shift 4px · Ctrl+D 복제">드래그 다중 선택(걸치기만 해도) · Shift+끌기 격자(8px)에 맞춰 옮기기 · Shift+크기조절 비율 유지 · Z 돋보기 · T 글자 · Ctrl+G 그룹 · Ctrl+C/V 복사·붙여넣기 · R 회전 · 더블클릭 글자 고치기 · Del 삭제</span></span></div>
   </main>
 
   <aside class="right">
@@ -669,7 +669,7 @@ function B(){return S.boards.find(b=>b.id===S.cur)||S.boards[0]}
 for(const k of ['els','W','H','name'])Object.defineProperty(S,k,{get(){return B()[k]},set(v){B()[k]=v}});
 S.boards=[newBoard('InventoryUI',320,180,0,0)];S.cur=S.boards[0].id;
 const cam={x:-20,y:-30};
-let sel=null,selSet=new Set(),zoom=3,uid=1,showGrid=false,snap=false;
+let sel=null,selSet=new Set(),zoom=3,uid=1,showGrid=false,snap=false,gridFlash=false;const GRID=8;
 const undoS=[],redoS=[];
 function setSel(ids){selSet=new Set(ids);sel=ids.length?ids[ids.length-1]:null}
 function selected(){return S.els.filter(e=>selSet.has(e.id))}
@@ -826,7 +826,7 @@ function draw(){const cw=Math.max(1,stage.clientWidth),ch=Math.max(1,stage.clien
   c.strokeStyle=b===act?'#f2b33d':'#ffffff22';c.lineWidth=1;c.strokeRect(sx-.5,sy-.5,W+1,H+1);
   c.font='12px "IBM Plex Sans KR",system-ui,sans-serif';c.textBaseline='alphabetic';c.fillStyle=b===act?'#f2b33d':'#9a95a6';c.fillText(labelText(b),sx,sy-6)}
  const [ox,oy]=bScr(act);c.save();c.translate(ox,oy);const W=S.W*zoom,H=S.H*zoom;
- if(showGrid&&zoom>=3){c.fillStyle='#ffffff14';for(let x=0;x<S.W;x+=8)c.fillRect(x*zoom,0,1,H);for(let y=0;y<S.H;y+=8)c.fillRect(0,y*zoom,W,1)}
+ if((showGrid||gridFlash)&&zoom>=3){c.fillStyle=gridFlash&&!showGrid?'#ffffff22':'#ffffff14';for(let x=0;x<S.W;x+=GRID)c.fillRect(x*zoom,0,1,H);for(let y=0;y<S.H;y+=GRID)c.fillRect(0,y*zoom,W,1)}
  for(const lb of S.els){if(COMPS[lb.comp].kind!=='label'||selSet.has(lb.id))continue;const v=vb(lb);c.strokeStyle='#ffffff2e';c.lineWidth=1;c.setLineDash([2,3]);c.strokeRect(v.x*zoom+.5,v.y*zoom+.5,v.w*zoom-1,v.h*zoom-1);c.setLineDash([])}
  const sels=selected(),el=single();
  for(const s2 of sels){const r=rotOf(s2);if(r%90===0){const v=vb(s2),x=v.x*zoom,y=v.y*zoom,w=v.w*zoom,h=v.h*zoom;c.strokeStyle='#000';c.lineWidth=3;c.strokeRect(x-1.5,y-1.5,w+3,h+3);c.strokeStyle='#f2b33d';c.lineWidth=1;c.setLineDash([4,3]);c.strokeRect(x-.5,y-.5,w+1,h+1);c.setLineDash([])}
@@ -1177,7 +1177,7 @@ view.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){showTbar();t
  if(cur){const rh=rotHandle(cur);if(Math.hypot(pt.x-rh.x,pt.y-rh.y)<=RT2/zoom){drag={mode:'rotate',el:cur,started:false,sp:pt,orot:rotOf(cur)};view.setPointerCapture(e.pointerId);return}}
  if(cur&&!e.shiftKey&&rotOf(cur)===0){const tol=HT/zoom;for(const hd of handles(cur)){if(Math.abs(pt.x-hd.x)<=tol&&Math.abs(pt.y-hd.y)<=tol){drag={mode:'resize',k:hd.k,el:cur,o:{...cur},sp:pt,started:false};view.setPointerCapture(e.pointerId);return}}}
  const hit=e.altKey?null:hitEl(pt);const add=e.shiftKey||touchMulti,deep=e.ctrlKey||e.metaKey;
- if(hit){const unit=(hit.g&&!deep)?groupOf(hit).map(x=>x.id):[hit.id];if(add){const s2=new Set(selSet);if(unit.every(i=>s2.has(i))){unit.forEach(i=>s2.delete(i));setSel([...s2]);refreshEditor();return}unit.forEach(i=>s2.add(i));setSel([...s2])}else if(deep?!(selSet.size===1&&selSet.has(hit.id)):!unit.every(i=>selSet.has(i)))setSel(unit);
+ if(hit){const unit=(hit.g&&!deep)?groupOf(hit).map(x=>x.id):[hit.id];if(add){const s2=new Set(selSet);if(unit.every(i=>s2.has(i))){drag={mode:'move',items:selected().filter(x=>!x.lock).map(x=>({el:x,ox:x.x,oy:x.y})),sp:pt,started:false,toggleOff:unit};view.setPointerCapture(e.pointerId);refreshEditor();return}unit.forEach(i=>s2.add(i));setSel([...s2])}else if(deep?!(selSet.size===1&&selSet.has(hit.id)):!unit.every(i=>selSet.has(i)))setSel(unit);
   drag={mode:'move',items:selected().filter(x=>!x.lock).map(x=>({el:x,ox:x.x,oy:x.y})),sp:pt,started:false};view.setPointerCapture(e.pointerId)}
  else{drag={mode:'marquee',sp:pt,base:add?[...selSet]:[],prev:[...selSet],started:false,r:null};if(!add)setSel([]);view.setPointerCapture(e.pointerId)}
  refreshEditor()});
@@ -1201,7 +1201,9 @@ view.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&tps.has(e.po
   const inR=el=>{const v=vb(el);return v.x<r.x+r.w&&v.x+v.w>r.x&&v.y<r.y+r.h&&v.y+v.h>r.y};const hs=new Set();for(const el of S.els){if(el.lock||!inR(el))continue;if(el.g)groupOf(el).forEach(m=>{if(!m.lock)hs.add(m.id)});else hs.add(el.id)}const hits=[...hs];setSel([...new Set(drag.base.concat(hits))]);draw();return}
  if(!drag.started){if(Math.abs(dx)<.5&&Math.abs(dy)<.5)return;drag.started=true;histOnce()}
  const g=snap?4:1,sn=v=>Math.round(v/g)*g;
- if(drag.mode==='move'){if(!drag.items.length)return;const lead=drag.items[drag.items.length-1];const mx=sn(lead.ox+dx)-lead.ox,my=sn(lead.oy+dy)-lead.oy;for(const it of drag.items){it.el.x=it.ox+mx;it.el.y=it.oy+my}}
+ if(drag.mode==='move'){if(!drag.items.length)return;const lead=drag.items[drag.items.length-1];const G=e.shiftKey?GRID:g,sg=v=>Math.round(v/G)*G;gridFlash=e.shiftKey;
+  const mx=sg(lead.ox+dx)-lead.ox,my=sg(lead.oy+dy)-lead.oy;for(const it of drag.items){it.el.x=it.ox+mx;it.el.y=it.oy+my}
+  if(e.shiftKey)document.getElementById('sSel').textContent=`격자 ${GRID}px에 맞춰 옮기는 중 · ${lead.el.x}, ${lead.el.y}`}
  else{const el=drag.el,o=drag.o;const [mw,mh]=minSize(el);const k=drag.k;let x=o.x,y=o.y,w=o.w,hh=o.h;
   if(k.includes('e'))w=Math.max(mw,sn(o.x+o.w+dx)-o.x);if(k.includes('s'))hh=Math.max(mh,sn(o.y+o.h+dy)-o.y);
   if(k.includes('w')){const nx=Math.min(sn(o.x+dx),o.x+o.w-mw);w=o.x+o.w-nx;x=nx}if(k.includes('n')){const ny=Math.min(sn(o.y+dy),o.y+o.h-mh);hh=o.y+o.h-ny;y=ny}
@@ -1218,10 +1220,11 @@ view.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&tps.has(e.po
    document.getElementById('sSel').textContent=`${el.name} · ${kk}배 · ${nw}×${nh}`;draw();return}
   else{el.x=x;el.y=y;el.w=w;el.h=hh;syncFree(el)}fixSize(el)}
  draw()});
-view.addEventListener('pointercancel',ev=>{tps.delete(ev.pointerId);if(pinch){if(tps.size<2)pinch=null;return}if(drag){drag=null;refreshEditor()}});
+view.addEventListener('pointercancel',ev=>{tps.delete(ev.pointerId);gridFlash=false;if(pinch){if(tps.size<2)pinch=null;return}if(drag){drag=null;refreshEditor()}});
 view.addEventListener('pointerup',ev=>{if(ev.pointerType==='touch')tps.delete(ev.pointerId);if(pinch){if(tps.size<2){pinch=null;autosaveCam()}return}
  const d0=drag;if(ev.pointerType!=='mouse'&&d0&&d0.mode==='move'&&!d0.started){const now=Date.now();if(lastTap&&now-lastTap.t<380&&Math.hypot(ev.clientX-lastTap.x,ev.clientY-lastTap.y)<24){lastTap=null;drag=null;const ht=hitText(scenePt(ev));if(ht){setSel([ht.id]);refreshEditor();openInline(ht)}return}lastTap={t:now,x:ev.clientX,y:ev.clientY}}
- const d=drag;drag=null;if(!d)return;
+ const d=drag;drag=null;if(gridFlash){gridFlash=false;draw()}if(!d)return;
+ if(d.mode==='move'&&d.toggleOff&&!d.started){const s2=new Set(selSet);d.toggleOff.forEach(i=>s2.delete(i));setSel([...s2]);refreshEditor();return}
  if(d.mode==='zoom'){if(d.ex!=null&&Math.abs(d.ex-d.sx)>6&&Math.abs(d.ey-d.sy)>6){const x0=Math.min(d.sx,d.ex)/zoom+cam.x,y0=Math.min(d.sy,d.ey)/zoom+cam.y,rw=Math.abs(d.ex-d.sx)/zoom,rh=Math.abs(d.ey-d.sy)/zoom;const cw=stage.clientWidth,ch=stage.clientHeight;
    zoom=zFit(Math.min(12,cw/rw,ch/rh));cam.x=x0+rw/2-cw/2/zoom;cam.y=y0+rh/2-ch/2/zoom;if(inl)closeInline();draw();autosaveCam()}
   else zoomAt(zStep((d.alt||ev.altKey)?-1:1),d.sx,d.sy);autosaveCam();return}if(d.mode==='pan'){view.style.cursor='grab';autosaveCam();return}if(d.mode==='board'){if(d.started)autosave();refreshEditor();return}if(d.mode==='marquee'){refreshEditor();return}if(d.started){renderProps();autosave()}draw()});
@@ -1791,7 +1794,7 @@ async function boot(){await loadFonts();let loaded=false;try{const raw=localStor
  await cloudInit();if(CLOUD.ready&&CLOUD.local&&GH.token&&!GH.inClaude){if(await ghConnect(GH.token,true)){GH.dirty=GHDEL.length>0||((await idbTx('readonly',st=>st.getAll()))||[]).some(r=>r.dirty&&!r.sample);await ghSync()}}
  if(CLOUD.ready){try{if(!loaded){const list=(await listProjects()).sort((a,b)=>Math.max(b.openedAt||0,b.updatedAt||0)-Math.max(a.openedAt||0,a.updatedAt||0));if(list.length){await openProject(list[0].id,true);toast(`저장된 '${list[0].name}' 프로젝트를 불러왔어요`);return}}}catch(e){}cloudSave()}updateProjUI()}
 window.addEventListener('resize',()=>{clearTimeout(window.__rz);window.__rz=setTimeout(draw,100)});
-const APP_VERSION='2026-10-27.2';
+const APP_VERSION='2026-10-27.3';
 async function checkUpdate(){if(!/^https?:/.test(location.protocol))return;try{const t=await(await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();const m=t.match(/APP_VERSION='([^']+)'/);
  if(m&&m[1]!==APP_VERSION){const b=document.getElementById('bUpdate');b.hidden=false;b.onclick=async()=>{try{await cloudSave()}catch(e){}location.replace(location.pathname+'?v='+encodeURIComponent(m[1]))}}}catch(e){}}
 boot();setTimeout(checkUpdate,3000);setInterval(checkUpdate,10*60*1000);
